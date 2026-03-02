@@ -68,16 +68,24 @@ export function Effects() {
     }
   }, 1);
 
+  const attachPass = (parent: any, self: any) => {
+    parent.addPass(self);
+    return () => {
+      const index = parent.passes.indexOf(self);
+      if (index !== -1) parent.passes.splice(index, 1);
+    };
+  };
+
   return (
     <effectComposer ref={composer} args={[gl]}>
-      <renderPass attach="passes" args={[scene, camera]} />
+      <renderPass attach={attachPass} args={[scene, camera]} />
       <unrealBloomPass
         ref={bloomPass}
-        attach="passes"
+        attach={attachPass}
         args={[aspect, 2, 1, 0]}
       />
-      <filmPass attach="passes" args={[aspect, 2, 1, 0]} />
-      <glitchPass attach="passes" factor={glitchFactor} />
+      <filmPass attach={attachPass} args={[0.35, false]} />
+      <glitchPass attach={attachPass} factor={glitchFactor} />
     </effectComposer>
   );
 }

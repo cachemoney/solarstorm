@@ -1,8 +1,8 @@
 precision highp float;
 
-#pragma glslify: noise = require(glsl-noise/simplex/4d);
-#pragma glslify: grain = require(glsl-film-grain);
-#pragma glslify: blend = require('glsl-blend-soft-light');
+#include "./common/noise4d.glsl"
+
+#define noise snoise
 
 uniform vec2 u_resolution;
 uniform float u_music;

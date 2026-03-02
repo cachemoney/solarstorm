@@ -17,12 +17,12 @@ export default defineConfig({
       defaultExtension: 'glsl',
       compress: false,
       watch: true,
-      root: '/'
+      root: './'
     })
   ],
   resolve: {
     alias: {
-      // Add any necessary aliases here
+      'glsl-noise': '/node_modules/glsl-noise',
     },
   },
 });

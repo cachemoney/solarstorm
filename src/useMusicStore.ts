@@ -1,5 +1,5 @@
 import { mapRange } from 'canvas-sketch-util/math';
-import { create } from 'zustand';
+import { createWithEqualityFn } from 'zustand/traditional';
 import { subscribeWithSelector } from 'zustand/middleware';
 
 interface MusicState {
@@ -59,7 +59,7 @@ const scaleFunc = (progress: number) => {
   return 1;
 };
 
-export const useMusicStore = create<MusicState>()(
+export const useMusicStore = createWithEqualityFn<MusicState>()(
   subscribeWithSelector((set) => ({
     didLoad: {
       bass: false,

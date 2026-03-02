@@ -10,8 +10,11 @@ uniform vec3 u_background;
 uniform float u_distort;
 uniform float u_radius;
 
-#pragma glslify: noise = require(glsl-noise/simplex/4d);
-#pragma glslify: snoise3 = require(glsl-noise/simplex/3d);
+#include "./common/noise4d.glsl"
+#include "./common/noise3d.glsl"
+
+#define noise snoise
+#define snoise3 snoise
 
 const int AMOUNT = 4;
 
@@ -47,8 +50,8 @@ void main () {
 
   // distortion
   float updateTime = u_time / 50.0;
-  float noise = snoise3(vec3(newPosition / 2.0 + updateTime * 5.0));
-  vec3 transformed = vec3(newPosition * (noise * pow(u_distort, 2.0) + u_radius));
+  float noiseValue = snoise3(vec3(newPosition / 2.0 + updateTime * 5.0));
+  vec3 transformed = vec3(newPosition * (noiseValue * pow(u_distort, 2.0) + u_radius));
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(transformed, 1.0);
 
