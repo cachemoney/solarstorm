@@ -1,0 +1,10 @@
+{
+  "permission": {
+    "read": {
+      "/home/mezmo/Work/projects/solarstorm/.opencode/get-shit-done/*": "allow"
+    },
+    "external_directory": {
+      "/home/mezmo/Work/projects/solarstorm/.opencode/get-shit-done/*": "allow"
+    }
+  }
+}
