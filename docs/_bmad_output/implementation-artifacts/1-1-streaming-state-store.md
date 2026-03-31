@@ -1,6 +1,6 @@
 # Story 1.1: Streaming State Store
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -20,17 +20,17 @@ so that all streaming modules have a single source of truth for config and statu
 
 ## Tasks / Subtasks
 
-- [ ] Create `src/useStreamStore.ts` (AC: 1-4)
-  - [ ] Define `StreamConfig` interface with `relayUrl: string` and `streamKey: string`
-  - [ ] Define `StreamStatus` type as `'offline' | 'connecting' | 'live' | 'error'`
-  - [ ] Define `StreamState` interface with all fields and actions
-  - [ ] Implement `loadConfig` — read from `localStorage` key `'solarstorm-stream-config'`, parse JSON, set `isConfigured` derived boolean
-  - [ ] Implement `setConfig` — write config to `localStorage`, update state, set `isConfigured = true`
-  - [ ] Implement `clearConfig` — remove from `localStorage`, reset config fields, set `isConfigured = false`, reset status to `'offline'`, clear `errorMessage`
-  - [ ] Implement `setStatus` — update status string
-  - [ ] Implement `setError` — set status to `'error'` and store `errorMessage`, ensure error message never contains stream key value
-  - [ ] Export `useStreamStore` using `createWithEqualityFn` + `subscribeWithSelector`
-  - [ ] Initialize store by calling `loadConfig` internally on creation
+- [x] Create `src/useStreamStore.ts` (AC: 1-4)
+  - [x] Define `StreamConfig` interface with `relayUrl: string` and `streamKey: string`
+  - [x] Define `StreamStatus` type as `'offline' | 'connecting' | 'live' | 'error'`
+  - [x] Define `StreamState` interface with all fields and actions
+  - [x] Implement `loadConfig` — read from `localStorage` key `'solarstorm-stream-config'`, parse JSON, set `isConfigured` derived boolean
+  - [x] Implement `setConfig` — write config to `localStorage`, update state, set `isConfigured = true`
+  - [x] Implement `clearConfig` — remove from `localStorage`, reset config fields, set `isConfigured = false`, reset status to `'offline'`, clear `errorMessage`
+  - [x] Implement `setStatus` — update status string
+  - [x] Implement `setError` — set status to `'error'` and store `errorMessage`, ensure error message never contains stream key value
+  - [x] Export `useStreamStore` using `createWithEqualityFn` + `subscribeWithSelector`
+  - [x] Initialize store by calling `loadConfig` internally on creation
 
 ## Dev Notes
 
@@ -114,8 +114,19 @@ Store actions are pure setters. Async operations (WHIP connection, media capture
 
 ### Agent Model Used
 
+GLM-5.1
+
 ### Debug Log References
+
+No issues encountered. TypeScript type-check passed clean on first run.
 
 ### Completion Notes List
 
+- Implemented `useStreamStore` following exact `useMusicStore` Zustand patterns (`createWithEqualityFn` + `subscribeWithSelector`, `set(() => { return { ... } })` pattern)
+- All 4 ACs satisfied: loadConfig reads localStorage with silent error handling (AC1), setConfig persists to localStorage and sets isConfigured (AC2), clearConfig removes localStorage and resets all state (AC3), setError sanitizes stream key from error messages (AC4/NFR7/NFR9)
+- No modifications to existing files — single new file only
+- Self-initializes via `useStreamStore.getState().loadConfig()` after store creation
+
 ### File List
+
+- `src/useStreamStore.ts` — NEW

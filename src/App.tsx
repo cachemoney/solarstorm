@@ -5,6 +5,8 @@ import * as meshline from './MeshLine';
 import { Effects } from './Effects';
 import { Music } from './Music';
 import { Scene } from './Scene';
+import { StreamControls, StreamErrorBoundary } from './StreamControls';
+import { StreamSettings } from './StreamSettings';
 import { useMusicStore } from './useMusicStore';
 import './styles.css';
 
@@ -65,6 +67,11 @@ export function App() {
           <a href="https://varun.ca/">varun.ca</a>
         </div>
       </div>
+
+      <StreamSettings />
+      <StreamErrorBoundary>
+        <StreamControls />
+      </StreamErrorBoundary>
     </div>
   );
 }
