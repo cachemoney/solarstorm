@@ -1,6 +1,6 @@
 # Story 2.1: Media Capture Pipeline
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -20,33 +20,33 @@ so that my visualization's visual and audio content can be broadcast together.
 
 ## Tasks / Subtasks
 
-- [ ] Create `src/StreamManager.ts` — Core streaming engine class (AC: 1-4)
-  - [ ] Define `StreamManager` class with private fields for `peerConnection`, `mediaStream`, `videoTrack`, `audioTrack`
-  - [ ] Implement `start(canvas: HTMLCanvasElement, audioContext: AudioContext, config: StreamConfig)` method
-  - [ ] Implement `stop()` method that stops all tracks and cleans up resources
-  - [ ] In `start()`: capture video via `canvas.captureStream(30)` — 30fps target
-  - [ ] In `start()`: capture audio via `audioContext.createMediaStreamDestination()` and connect to existing audio graph
-  - [ ] In `start()`: combine tracks via `new MediaStream([...videoTracks, ...audioTracks])`
-  - [ ] Add error handling with try-catch — on failure, call `useStreamStore.getState().setError()`
-  - [ ] Export singleton instance or factory function
+- [x] Create `src/StreamManager.ts` — Core streaming engine class (AC: 1-4)
+  - [x] Define `StreamManager` class with private fields for `mediaStream`, `videoTrack`, `audioTrack`, `audioDestination`, `audioListener`
+  - [x] Implement `start(canvas: HTMLCanvasElement, audioListener: AudioListener)` method
+  - [x] Implement `stop()` method that stops all tracks and cleans up resources
+  - [x] In `start()`: capture video via `canvas.captureStream(30)` — 30fps target
+  - [x] In `start()`: capture audio via `audioListener.context.createMediaStreamDestination()` and connect `audioListener.gain` to destination
+  - [x] In `start()`: combine tracks via `new MediaStream([videoTrack, audioTrack])`
+  - [x] Add error handling with try-catch — on failure, call `useStreamStore.getState().setError()`
+  - [x] Export singleton instance `streamManager`
 
-- [ ] Modify `src/Music.tsx` — Expose AudioListener for audio capture (AC: 1)
-  - [ ] Add `forwardRef` to `Audio` component to expose the `AudioListener` ref
-  - [ ] Alternative: Add a ref callback prop `onAudioListenerReady?: (listener: AudioListener) => void`
-  - [ ] Ensure backward compatibility — no changes to existing behavior when ref not used
+- [x] Modify `src/Music.tsx` — Expose AudioListener for audio capture (AC: 1)
+  - [x] Added `onListener` callback prop to `AudioLayerProps` and `AudioProps`
+  - [x] Added `onAudioListenerReady` callback prop to `Music` component
+  - [x] Backward compatible — no changes to existing behavior when callback not provided
 
-- [ ] Create `src/StreamCapture.tsx` — R3F component for media capture (AC: 1-3)
-  - [ ] Use `useThree()` hook to access `gl.domElement` (canvas)
-  - [ ] Accept `audioListener` ref as prop from parent
-  - [ ] Access audio context via `audioListener.context`
-  - [ ] Call `StreamManager.start()` with canvas and audio context
-  - [ ] Use `useEffect` with cleanup to call `StreamManager.stop()` on unmount
-  - [ ] Only initiate capture when `useStreamStore.status === 'connecting'`
+- [x] Create `src/StreamCapture.tsx` — R3F component for media capture (AC: 1-3)
+  - [x] Use `useThree()` hook to access `gl.domElement` (canvas)
+  - [x] Accept `audioListener` ref as prop from parent
+  - [x] Call `StreamManager.start()` with canvas and audioListener
+  - [x] Use `useEffect` with cleanup to call `StreamManager.stop()` on unmount
+  - [x] Only initiate capture when `useStreamStore.status === 'connecting'`
 
-- [ ] Update `src/App.tsx` — Integrate StreamCapture (AC: 1-4)
-  - [ ] Add state or ref to hold `AudioListener` from `Music` component
-  - [ ] Render `<StreamCapture audioListener={audioListenerRef} />` inside `<Canvas>` tree
-  - [ ] Ensure StreamCapture only renders when streaming is being initiated
+- [x] Update `src/App.tsx` — Integrate StreamCapture (AC: 1-4)
+  - [x] Added `useState<AudioListener | null>` to hold AudioListener from `Music` component
+  - [x] Pass `onAudioListenerReady={setAudioListener}` to `<Music />`
+  - [x] Render `<StreamCapture audioListener={audioListener} />` inside `<Canvas>` tree when status is `connecting`
+  - [x] Wire `StreamControls` Go Live/Stop/Retry buttons to store actions and `streamManager`
 
 ## Dev Notes
 
@@ -229,16 +229,58 @@ This story only covers media capture. The WHIP connection to the relay server is
 
 ### Agent Model Used
 
-(To be filled by dev agent)
+glm-5.1
 
 ### Debug Log References
 
-(To be filled by dev agent)
+TypeScript type-check passed clean with no errors after all changes.
 
 ### Completion Notes List
 
-(To be filled by dev agent)
+- Created `StreamManager.ts` as a plain TypeScript class (no React dependencies). Captures WebGL canvas video via `captureStream(30)` and audio via `createMediaStreamDestination()` connected to `AudioListener.gain`. Produces a combined `MediaStream` with both tracks. Proper cleanup on `stop()` disconnects the gain node and stops all tracks.
+- Modified `Music.tsx` using callback prop pattern (`onAudioListenerReady`). Added `onListener` prop to `AudioProps` and `AudioLayerProps`, threaded through from the `Music` component. Fully backward compatible — existing `Music` usage without the prop works unchanged.
+- Created `StreamCapture.tsx` as an R3F component using `useThree()` for canvas access. Mounts inside `<Canvas>` tree only when `status === 'connecting'`. Uses `useEffect` cleanup to stop the manager on unmount.
+- Updated `App.tsx` to hold `AudioListener` in state via `setAudioListener` callback from `<Music>`. Renders `<StreamCapture>` conditionally inside Canvas. Wired `StreamControls` Go Live/Stop/Retry buttons.
+- No test suite in project — validated via `npm run type-check` (tsc --noEmit) with zero errors.
+
+### Change Log
+
+- 2026-03-31: Implemented Story 2.1 — Media Capture Pipeline. Created StreamManager.ts, StreamCapture.tsx. Modified Music.tsx (expose AudioListener), App.tsx (integrate StreamCapture + wire controls), StreamControls.tsx (wire Go Live/Stop/Retry to store and manager). Type-check passes.
 
 ### File List
 
-(To be filled by dev agent)
+- `src/StreamManager.ts` — NEW
+- `src/StreamCapture.tsx` — NEW
+- `src/Music.tsx` — MODIFIED
+- `src/App.tsx` — MODIFIED
+- `src/StreamControls.tsx` — MODIFIED
+
+### Review Findings
+
+- [x] [Review][Decision→Patch] Only bass audio captured in stream — Fixed: onListener now passed to all 4 AudioLayers. StreamManager.start() accepts AudioListener[], connects all gains to a single MediaStreamDestination. Three.js AudioListeners share a common AudioContext so cross-listener routing works. [blind+edge+auditor]
+
+- [x] [Review][Decision→Patch] WebGL canvas may produce blank/black frames — Fixed: added `gl={{ preserveDrawingBuffer: true }}` to Canvas. [edge]
+
+- [x] [Review][Patch][Dismissed] Error handler does not set status to 'error' — False positive: useStreamStore.setError() already sets status to 'error' (line 69). [auditor]
+
+- [x] [Review][Patch] start() has no re-entry guard — Fixed: added cleanup guard at entry. [StreamManager.ts] [blind+edge]
+
+- [x] [Review][Patch] Track array access without bounds check — Fixed: explicit null checks with descriptive errors. [StreamManager.ts] [edge]
+
+- [x] [Review][Patch] Retry does not clear errorMessage — Fixed: setStatus now clears errorMessage when transitioning to non-error states. [useStreamStore.ts] [edge]
+
+- [x] [Review][Patch] stop() does not clear errorMessage — Fixed: setStatus clears errorMessage on non-error transitions. [useStreamStore.ts] [edge]
+
+- [x] [Review][Patch] Duplicate unused StreamConfig interface — Removed from StreamManager.ts (already in useStreamStore.ts). [edge+auditor]
+
+- [x] [Review][Patch] Redundant AudioListener import — Removed from App.tsx, uses THREE.AudioListener. [App.tsx] [blind]
+
+- [x] [Review][Patch] onListener in useEffect deps is fragile — Fixed: uses ref pattern to avoid dependency on callback identity. [Music.tsx] [blind]
+
+- [x] [Review][Defer] Status never transitions to 'live' — by design; WHIP connection (Story 2.2) will handle this transition [blind+edge+auditor]
+
+- [x] [Review][Defer] AudioContext may be suspended when start() called — pre-existing, depends on user clicking Play first [edge]
+
+- [x] [Review][Defer] Stream capture can start before audio is playing — pre-existing UX issue, not gated by init state [edge]
+
+- [x] [Review][Defer] Audio component cleanup disconnects sound from listener gain during HMR — pre-existing edge case [edge]

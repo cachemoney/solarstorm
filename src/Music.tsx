@@ -56,11 +56,18 @@ function Analyzer({ track, sound, trackProgress = false }: AnalyzerProps) {
 interface AudioProps {
   track: TrackType;
   volume: number;
+  onListener?: (listener: AudioListener) => void;
 }
 
-const Audio = forwardRef<ThreeAudio, AudioProps>(({ track, volume, ...props }, ref) => {
+const Audio = forwardRef<ThreeAudio, AudioProps>(({ track, volume, onListener, ...props }, ref) => {
   const { camera } = useThree();
   const [listener] = useState(() => new AudioListener());
+  const onListenerRef = useRef(onListener);
+  onListenerRef.current = onListener;
+
+  useEffect(() => {
+    if (onListenerRef.current) onListenerRef.current(listener);
+  }, [listener]);
 
   const setLoaded = useMusicStore((state) => state.setLoaded);
   const init = useMusicStore((state) => state.init);
@@ -95,26 +102,31 @@ interface AudioLayerProps {
   track: TrackType;
   trackProgress?: boolean;
   quiet?: boolean;
+  onListener?: (listener: AudioListener) => void;
 }
 
-export function AudioLayer({ track, trackProgress, quiet = false }: AudioLayerProps) {
+export function AudioLayer({ track, trackProgress, quiet = false, onListener }: AudioLayerProps) {
   const sound = useRef<ThreeAudio>();
 
   return (
     <>
-      <Audio ref={sound as any} track={track} volume={quiet ? 0 : 0.5} />
+      <Audio ref={sound as any} track={track} volume={quiet ? 0 : 0.5} onListener={onListener} />
       <Analyzer track={track} sound={sound} trackProgress={trackProgress} />
     </>
   );
 }
 
-export function Music() {
+interface MusicProps {
+  onAudioListenerReady?: (listener: AudioListener) => void;
+}
+
+export function Music({ onAudioListenerReady }: MusicProps) {
   return (
     <>
-      <AudioLayer track="bass" />
-      <AudioLayer track="drums" />
-      <AudioLayer track="melody" trackProgress />
-      <AudioLayer track="vocals" />
+      <AudioLayer track="bass" onListener={onAudioListenerReady} />
+      <AudioLayer track="drums" onListener={onAudioListenerReady} />
+      <AudioLayer track="melody" trackProgress onListener={onAudioListenerReady} />
+      <AudioLayer track="vocals" onListener={onAudioListenerReady} />
     </>
   );
 }

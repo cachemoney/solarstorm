@@ -59,7 +59,11 @@ export const useStreamStore = createWithEqualityFn<StreamState>()(
     },
     setStatus: (status) =>
       set(() => {
-        return { status };
+        const currentError = get().errorMessage;
+        return { 
+          status, 
+          errorMessage: status === 'error' ? currentError : null 
+        };
       }),
     setError: (message) => {
       const key = get().config.streamKey;

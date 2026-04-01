@@ -1,10 +1,20 @@
 import React from 'react';
 import { useStreamStore } from './useStreamStore';
+import { streamManager } from './StreamManager';
 
 export function StreamControls() {
   const isConfigured = useStreamStore((s) => s.isConfigured);
   const status = useStreamStore((s) => s.status);
   const errorMessage = useStreamStore((s) => s.errorMessage);
+  const setStatus = useStreamStore((s) => s.setStatus);
+
+  const handleGoLive = () => {
+    setStatus('connecting');
+  };
+
+  const handleStop = () => {
+    streamManager.stop();
+  };
 
   return (
     <div className="stream-controls">
@@ -17,20 +27,18 @@ export function StreamControls() {
         <div className="stream-error-message">{errorMessage}</div>
       )}
 
-      {status === 'live' ? (
-        <button
-          onClick={() => {
-            // TODO: Epic 2 - wire to StreamManager.stop()
-          }}
-        >
+      {status === 'live' || status === 'connecting' ? (
+        <button onClick={handleStop}>
           Stop Stream
+        </button>
+      ) : status === 'error' ? (
+        <button onClick={handleGoLive}>
+          Retry
         </button>
       ) : (
         <button
           disabled={!isConfigured}
-          onClick={() => {
-            // TODO: Epic 2 - wire to StreamManager.start()
-          }}
+          onClick={handleGoLive}
         >
           Go Live
         </button>

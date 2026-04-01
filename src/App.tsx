@@ -1,13 +1,15 @@
 import * as THREE from 'three';
-import React, { Suspense, useCallback, useRef } from 'react';
+import React, { Suspense, useCallback, useRef, useState } from 'react';
 import { Canvas, extend } from '@react-three/fiber';
 import * as meshline from './MeshLine';
 import { Effects } from './Effects';
 import { Music } from './Music';
 import { Scene } from './Scene';
+import { StreamCapture } from './StreamCapture';
 import { StreamControls, StreamErrorBoundary } from './StreamControls';
 import { StreamSettings } from './StreamSettings';
 import { useMusicStore } from './useMusicStore';
+import { useStreamStore } from './useStreamStore';
 import './styles.css';
 
 extend(meshline);
@@ -18,6 +20,16 @@ export function App() {
   const init = useMusicStore((state) => state.init);
   const setInit = useMusicStore((state) => state.setInit);
   const didLoadAll = useMusicStore(didLoadAllAudio);
+  const streamStatus = useStreamStore((s) => s.status);
+
+  const [audioListeners, setAudioListeners] = useState<THREE.AudioListener[]>([]);
+
+  const handleAudioListenerReady = useCallback((listener: THREE.AudioListener) => {
+    setAudioListeners((prev) => {
+      if (prev.includes(listener)) return prev;
+      return [...prev, listener];
+    });
+  }, []);
 
   const mouse = useRef<[number, number]>([0, 0]);
   const onMouseMove = useCallback(
@@ -31,6 +43,7 @@ export function App() {
       <Canvas
         dpr={window.devicePixelRatio}
         camera={{ fov: 100, position: [0, 0, 30] }}
+        gl={{ preserveDrawingBuffer: true }}
         onCreated={({ gl, size, camera }) => {
           if (size.width < 600) {
             camera.position.z = 45;
@@ -38,11 +51,14 @@ export function App() {
           gl.setClearColor(new THREE.Color('#020207'));
         }}>
         <Suspense fallback={null}>
-          <Music />
+          <Music onAudioListenerReady={handleAudioListenerReady} />
         </Suspense>
         {/* <axesHelper /> */}
         <Scene init={init} mouse={mouse} />
         <Effects />
+      {(streamStatus === 'connecting' || streamStatus === 'live' || streamStatus === 'error') && (
+        <StreamCapture audioListeners={audioListeners} />
+      )}
       </Canvas>
 
       {!init && (
