@@ -9,6 +9,7 @@ export class StreamManager {
   private connectedListeners: AudioListener[] = [];
   private peerConnection: RTCPeerConnection | null = null;
   private connectionTimeout: ReturnType<typeof setTimeout> | null = null;
+  private timeoutFired = false;
 
   getMediaStream(): MediaStream | null {
     return this.mediaStream;
@@ -81,6 +82,19 @@ export class StreamManager {
 
   private async connectWhip(relayUrl: string, streamKey: string): Promise<void> {
     try {
+      if (!relayUrl.toLowerCase().startsWith('https://')) {
+        throw new Error('Relay URL must use HTTPS');
+      }
+
+      this.timeoutFired = false;
+      this.connectionTimeout = setTimeout(() => {
+        this.timeoutFired = true;
+        if (this.peerConnection) {
+          this.cleanup();
+          useStreamStore.getState().setError('Connection timed out after 10 seconds');
+        }
+      }, 10_000);
+
       this.peerConnection = new RTCPeerConnection({
         iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
       });
@@ -94,7 +108,7 @@ export class StreamManager {
       this.peerConnection.oniceconnectionstatechange = () => {
         if (!this.peerConnection) return;
         const state = this.peerConnection.iceConnectionState;
-        if (state === 'connected') {
+        if (state === 'connected' || state === 'completed') {
           this.clearConnectionTimeout();
           useStreamStore.getState().setStatus('live');
         } else if (state === 'failed' || state === 'disconnected') {
@@ -106,14 +120,19 @@ export class StreamManager {
       const offer = await this.peerConnection.createOffer();
       await this.peerConnection.setLocalDescription(offer);
 
-      const response = await fetch(relayUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/sdp',
-          Authorization: `Bearer ${streamKey}`,
-        },
-        body: offer.sdp,
-      });
+      let response: Response;
+      try {
+        response = await fetch(relayUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/sdp',
+            Authorization: `Bearer ${streamKey}`,
+          },
+          body: offer.sdp,
+        });
+      } catch {
+        throw new Error('Relay service unreachable');
+      }
 
       if (!response.ok) {
         throw new Error(`Relay returned ${response.status}: ${response.statusText}`);
@@ -122,15 +141,9 @@ export class StreamManager {
       const answerSdp = await response.text();
       const answer = new RTCSessionDescription({ type: 'answer', sdp: answerSdp });
       await this.peerConnection.setRemoteDescription(answer);
-
-      this.connectionTimeout = setTimeout(() => {
-        if (this.peerConnection) {
-          this.cleanup();
-          useStreamStore.getState().setError('Connection timed out after 10 seconds');
-        }
-      }, 10_000);
     } catch (error) {
       this.cleanup();
+      if (this.timeoutFired) return;
       const message =
         error instanceof Error ? error.message : 'WHIP connection failed';
       useStreamStore.getState().setError(message);

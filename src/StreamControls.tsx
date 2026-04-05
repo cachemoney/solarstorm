@@ -32,7 +32,7 @@ export function StreamControls() {
           Stop Stream
         </button>
       ) : status === 'error' ? (
-        <button onClick={handleGoLive}>
+        <button disabled={!isConfigured} onClick={handleGoLive}>
           Retry
         </button>
       ) : (
@@ -62,15 +62,24 @@ export class StreamErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error) {
-    const key = useStreamStore.getState().config.streamKey;
+    const key = useStreamStore.getState().config?.streamKey ?? '';
     const sanitized =
       key.length > 0 ? error.message.replaceAll(key, '***') : error.message;
     console.error('StreamControls render error:', sanitized);
   }
 
+  reset = () => {
+    this.setState({ hasError: false });
+  };
+
   render() {
     if (this.state.hasError) {
-      return <div className="stream-error-fallback">Streaming error</div>;
+      return (
+        <div className="stream-error-fallback">
+          Streaming error
+          <button onClick={this.reset}>Retry</button>
+        </div>
+      );
     }
     return this.props.children;
   }

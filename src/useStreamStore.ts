@@ -54,15 +54,19 @@ export const useStreamStore = createWithEqualityFn<StreamState>()(
         // silently ignore storage errors
       }
       set(() => {
-        return { config, isConfigured: true };
+        return {
+          config,
+          isConfigured:
+            config.relayUrl.trim().length > 0 &&
+            config.streamKey.trim().length > 0,
+        };
       });
     },
     setStatus: (status) =>
       set(() => {
-        const currentError = get().errorMessage;
-        return { 
-          status, 
-          errorMessage: status === 'error' ? currentError : null 
+        return {
+          status,
+          errorMessage: status !== 'error' ? null : get().errorMessage,
         };
       }),
     setError: (message) => {
@@ -92,7 +96,8 @@ export const useStreamStore = createWithEqualityFn<StreamState>()(
       const stored = readStoredConfig();
       if (!stored) return;
       const isConfigured =
-        stored.relayUrl.length > 0 && stored.streamKey.length > 0;
+        stored.relayUrl.trim().length > 0 &&
+        stored.streamKey.trim().length > 0;
       set(() => {
         return { config: stored, isConfigured };
       });

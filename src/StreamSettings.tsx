@@ -56,7 +56,12 @@ export function StreamSettings() {
             />
           </label>
           <div className="stream-settings-actions">
-            <button onClick={handleSave}>Save</button>
+            <button
+              disabled={relayUrl.trim().length === 0 || streamKey.trim().length === 0}
+              onClick={handleSave}
+            >
+              Save
+            </button>
             <button onClick={handleClear}>Clear</button>
             <button onClick={() => setOpen(false)}>Cancel</button>
           </div>
