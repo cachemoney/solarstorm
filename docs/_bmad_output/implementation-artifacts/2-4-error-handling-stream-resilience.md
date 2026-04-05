@@ -1,6 +1,6 @@
 # Story 2.4: Error Handling & Stream Resilience
 
-Status: review
+Status: done
 
 ## Story
 

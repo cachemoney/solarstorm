@@ -8,7 +8,7 @@ development_status:
   2-1-media-capture-pipeline: done
   2-2-whip-connection-stream-delivery: done
   2-3-stream-stop-cleanup: done
-  2-4-error-handling-stream-resilience: review
+  2-4-error-handling-stream-resilience: done
 
 # STATUS DEFINITIONS:
 #   backlog        — not yet started
