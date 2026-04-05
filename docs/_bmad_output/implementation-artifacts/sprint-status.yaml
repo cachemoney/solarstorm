@@ -1,12 +1,12 @@
 # Sprint Status — Solar Storm Streaming Feature
-# Last updated: 2026-03-31
+# Last updated: 2026-04-04
 
 development_status:
-  1-1-streaming-state-store: review
-  1-2-stream-settings-panel: review
-  1-3-stream-status-go-live-button: review
+  1-1-streaming-state-store: done
+  1-2-stream-settings-panel: done
+  1-3-stream-status-go-live-button: done
   2-1-media-capture-pipeline: done
-  2-2-whip-connection-stream-delivery: review
+  2-2-whip-connection-stream-delivery: done
   2-3-stream-stop-cleanup: done
   2-4-error-handling-stream-resilience: review
 

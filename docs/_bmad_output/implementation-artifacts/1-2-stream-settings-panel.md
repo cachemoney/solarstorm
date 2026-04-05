@@ -1,6 +1,6 @@
 # Story 1.2: Stream Settings Panel
 
-Status: review
+Status: done
 
 ## Story
 
@@ -138,3 +138,11 @@ No issues encountered. TypeScript type-check passed clean on first run.
 - `src/StreamSettings.tsx` — NEW
 - `src/styles.css` — MODIFIED (appended streaming UI styles)
 - `src/App.tsx` — MODIFIED (import + render StreamSettings)
+
+### Review Findings
+
+- [x] [Review][Patch] Save button silently fails with no feedback on empty inputs — disabled Save when either field is empty [`src/StreamSettings.tsx:59-66`]
+- [x] [Review][Patch] `componentDidCatch` crashes if `config.streamKey` is undefined/null — added optional chaining and nullish coalescing [`src/StreamControls.tsx:65-66`]
+- [x] [Review][Patch] ErrorBoundary has no reset mechanism — added retry button and reset method [`src/StreamControls.tsx:70-79`]
+- [x] [Review][Defer] No Escape key / click-outside / ARIA attributes on settings dialog — deferred accessibility improvement [`src/StreamSettings.tsx:38-64`]
+- [x] [Review][Defer] No URL validation at input level — enforced downstream in StreamManager.connectWhip [`src/StreamSettings.tsx:20`]

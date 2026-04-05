@@ -1,6 +1,6 @@
 # Story 2.2: WHIP Connection & Stream Delivery
 
-Status: review
+Status: done
 
 ## Story
 
@@ -207,3 +207,13 @@ TypeScript type-check passed clean with no errors after all changes.
 ### Change Log
 
 - 2026-03-31: Implemented Story 2.2 — WHIP Connection & Stream Delivery. Added connectWhip() with RTCPeerConnection, SDP exchange, ICE monitoring, 10s timeout. Extended cleanup to close peer connection. Type-check passes.
+
+### Review Findings
+
+- [x] [Review][Patch] 10-second timeout starts after SDP exchange, not at connection attempt start — fixed: timeout set at top of `connectWhip()` [`src/StreamManager.ts:85-88`]
+- [x] [Review][Patch] `fetch()` network error returns native message instead of `'Relay service unreachable'` [`src/StreamManager.ts:133-136`]
+- [x] [Review][Patch] No HTTPS enforcement on relayUrl before transmitting stream key [`src/StreamManager.ts:85-87`]
+- [x] [Review][Patch] ICE `disconnected` treated as fatal — only `failed` should trigger cleanup [`src/StreamManager.ts:100-103`]
+- [x] [Review][Patch] ICE `completed` state never handled — timeout fires and kills healthy connection [`src/StreamManager.ts:97-99`]
+- [x] [Review][Defer] Rapid double-click start() causes connectWhip races — deferred, needs cancellation/abort pattern [`src/StreamManager.ts:68`]
+- [x] [Review][Defer] No ICE candidate gathering wait (trickle ICE) — deferred, WHIP spec ambiguity [`src/StreamManager.ts:106-107`]

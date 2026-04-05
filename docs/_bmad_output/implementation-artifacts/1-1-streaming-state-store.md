@@ -1,6 +1,6 @@
 # Story 1.1: Streaming State Store
 
-Status: review
+Status: done
 
 ## Story
 
@@ -130,3 +130,13 @@ No issues encountered. TypeScript type-check passed clean on first run.
 ### File List
 
 - `src/useStreamStore.ts` — NEW
+
+### Review Findings
+
+- [x] [Review][Decision] `setError` couples to `status: 'error'` — resolved: current behavior kept (setError sets both status and message)
+- [x] [Review][Patch] `setConfig` sets `isConfigured: true` for empty-string configs — fixed: validates both fields are non-empty trimmed [`src/useStreamStore.ts:56-61`]
+- [x] [Review][Patch] `setStatus` doesn't clear `errorMessage` on non-error transitions — fixed: clears errorMessage when status !== 'error' [`src/useStreamStore.ts:63-67`]
+- [x] [Review][Patch] `setStatus('error')` bypasses `errorMessage` invariant — mitigated: setStatus('error') preserves existing errorMessage; setError() is the canonical path [`src/useStreamStore.ts:63-67`]
+- [x] [Review][Patch] Whitespace-only strings pass `isConfigured` guard in `loadConfig` — fixed: trim() applied before length check [`src/useStreamStore.ts:95-97`]
+- [x] [Review][Defer] No SSR guard on `localStorage` access at module level — pre-existing, project is client-only [`src/useStreamStore.ts:98`]
+- [x] [Review][Defer] Plaintext `streamKey` in localStorage without encryption — pre-existing security concern [`src/useStreamStore.ts:52`]

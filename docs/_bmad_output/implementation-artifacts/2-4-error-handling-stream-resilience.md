@@ -105,6 +105,15 @@ TypeScript type-check passed clean with zero errors after all changes.
 
 - 2026-03-31: Fixed Story 2.4 — Error Handling & Stream Resilience. Fixed critical bug where StreamCapture unmounted on error (overwriting error state). Rewrote StreamCapture with status-driven effect pattern. Verified all error handling paths in StreamManager, StreamControls, and useStreamStore. Type-check passes.
 
+### Review Findings
+
+- [ ] [Review][Patch] `disconnected` ICE state silently dropped — AC1 violation. Diff removes `'disconnected'` from `oniceconnectionstatechange` error check, leaving stream showing 'live' indefinitely on network drops that don't recover to 'failed'. Re-add `'disconnected'` with a grace-period timeout before erroring. [blind+edge+auditor] [`StreamManager.ts:111`]
+- [ ] [Review][Patch] Connection timeout overwrites accurate error — timeout fires after fetch already failed and called cleanup(), clobbers the real error message (e.g. 'Relay service unreachable' replaced by 'Connection timed out'). Guard: skip setError in catch if timeout already fired, or clear timeout in cleanup path before fetch errors. [blind+edge] [`StreamManager.ts:88-93`]
+- [ ] [Review][Patch] HTTPS check is case-sensitive — `startsWith('https://')` rejects valid uppercase schemes like `HTTPS://`. Use `relayUrl.toLowerCase().startsWith('https://')`. [edge] [`StreamManager.ts:84`]
+- [x] [Review][Defer] `offer.sdp` could be null — no guard before passing as fetch body [`StreamManager.ts:117-118`] — deferred, pre-existing
+- [x] [Review][Defer] `audioListeners.length === 0` leaves status stuck at `connecting` indefinitely with no timeout or error [`StreamCapture.tsx:22`] — deferred, pre-existing
+- [x] [Review][Defer] Error boundary Retry can re-throw if children state caused the original render error [`StreamControls.tsx:71`] — deferred, pre-existing
+
 ### File List
 
 - `src/App.tsx` — MODIFIED (added `'error'` to StreamCapture mount condition)

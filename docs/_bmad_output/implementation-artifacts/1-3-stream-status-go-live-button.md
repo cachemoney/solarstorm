@@ -1,6 +1,6 @@
 # Story 1.3: Stream Status & Go Live Button
 
-Status: review
+Status: done
 
 ## Story
 
@@ -239,3 +239,13 @@ No issues encountered. TypeScript type-check passed clean on first run.
 - `src/StreamControls.tsx` — NEW
 - `src/styles.css` — MODIFIED (appended stream controls CSS)
 - `src/App.tsx` — MODIFIED (import + render StreamErrorBoundary + StreamControls)
+
+- `src/StreamControls.tsx` — PATCH: Retry button shows during error status even when unconfigured
+
+- `src/StreamControls.tsx` — Patch: Status text displayed as raw lowercase
+- `src/StreamSettings.tsx` — Patch: Save button disabled when fields are empty (- `src/styles.css` — Patch: CSS for stream controls styles
+- `src/App.tsx` — Patch: Integration of StreamControls + StreamErrorBoundary
+ - `src/StreamControls.tsx` — Patch: ErrorBoundary has reset/retry button
+ - `src/StreamControls.tsx` — Patch: ErrorBoundary null safety in componentDidCatch
+- `src/StreamControls.tsx` — Patch: Status indicator shows uppercase via CSS (not JS)
+
